@@ -17,7 +17,9 @@ const tmpDir = './tmp'
 
 app.post('/mint', async (req, res) => {
     const imagePath = 'images'
-    const streamDir = `${tmpDir}/${req.body.id}/`
+    const { id, addressTo } = req.body
+    if (id == undefined || addressTo == undefined) return res.status(500).send({ message: 'Empty params id pr addressTo' })
+    const streamDir = `${tmpDir}/${id}/`
     const streamDirImages = streamDir + '/images'
     const streamDirMetadata = streamDir + '/meta'
     if (!fs.existsSync(streamDir)) { fs.mkdirSync(streamDir) }
@@ -63,9 +65,9 @@ app.post('/mint', async (req, res) => {
     });
     await transactionResponse1.wait()
     console.log(`Transaction Hash: ${transactionResponse1.hash}`);
-    console.log(process.env.SERVICE_ADDRESS)
+    console.log(`MintTo ${addressTo}`)
     for (i in imagesIPFS) {
-        const transactionResponse = await contract.mintTo(process.env.SERVICE_ADDRESS, {
+        const transactionResponse = await contract.mintTo(addressTo, {
             gasLimit: 500_000,
             value: ethers.utils.parseEther("0.01")
         });
@@ -82,6 +84,7 @@ app.listen(port, async function () {
     console.log('Service started')
     // axios.post(`http://localhost:${port}/mint`, {
     //     id: 123,
+    //     addressTo: '0xAda6c2896de48759673FEb8f8Aba8281fc969954',
     //     images: [
     //         {
     //             name: 'x',
